@@ -7,12 +7,7 @@ from flask import jsonify
 from flask import request
 from pyspark.sql.types import StructType
 
-os.environ[
-    'PYSPARK_SUBMIT_ARGS'] = "--packages=com.amazonaws:aws-java-sdk-bundle:1.11.271,org.apache.hadoop:hadoop-aws:3.1.2 pyspark-shell"
 
-import findspark
-
-findspark.init()
 
 from pyspark.sql import SQLContext
 from pyspark.sql import SparkSession
@@ -20,26 +15,31 @@ from pyspark.sql import SparkSession
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
-spark = SparkSession.builder \
-    .master('local') \
-    .appName('ParquetName') \
-    .config('spark.executor.memory', '5gb') \
-    .config("spark.cores.max", "6") \
-    .getOrCreate()
-
-spark._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-spark._jsc.hadoopConfiguration().set("com.amazonaws.services.s3.enableV4", "true")
-spark._jsc.hadoopConfiguration().set("fs.s3a.awsAccessKeyId", os.getenv["AWS_ACCESS_KEY"])
-spark._jsc.hadoopConfiguration().set("fs.s3a.awsSecretAccessKey", os.getenv["AWS_SECRET_ACCESS_KEY"])
-sc = spark.sparkContext
-
-sqlContext = SQLContext(sc)
 
 s3 = boto3.resource("s3")
 
 
 @app.route('/api/parquet', methods=['POST'])
 def api_all():
+    import findspark
+
+    findspark.init()
+    os.environ['PYSPARK_SUBMIT_ARGS'] = "--packages=com.amazonaws:aws-java-sdk-bundle:1.11.271,org.apache.hadoop:hadoop-aws:3.1.2 pyspark-shell"
+    spark = SparkSession.builder \
+        .master('local') \
+        .appName('ParquetName') \
+        .config('spark.executor.memory', '5gb') \
+        .config("spark.cores.max", "6") \
+        .getOrCreate()
+
+    spark._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+    spark._jsc.hadoopConfiguration().set("com.amazonaws.services.s3.enableV4", "true")
+    spark._jsc.hadoopConfiguration().set("fs.s3a.awsAccessKeyId", str(os.getenv["AWS_ACCESS_KEY_ID"]))
+    spark._jsc.hadoopConfiguration().set("fs.s3a.awsSecretAccessKey", str(os.getenv["AWS_SECRET_ACCESS_KEY"]))
+    sc = spark.sparkContext
+
+    sqlContext = SQLContext(sc)
+
     if request.method == 'POST':
         file_key = request.data.get('file_key')
         schema = StructType([])
@@ -62,4 +62,4 @@ def api_all():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')
