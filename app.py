@@ -29,8 +29,8 @@ spark = SparkSession.builder \
 
 spark._jsc.hadoopConfiguration().set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
 spark._jsc.hadoopConfiguration().set("com.amazonaws.services.s3.enableV4", "true")
-spark._jsc.hadoopConfiguration().set("fs.s3a.awsAccessKeyId", 'AKIAIWLQIZBK2CMZ6IUQ')
-spark._jsc.hadoopConfiguration().set("fs.s3a.awsSecretAccessKey", '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')
+spark._jsc.hadoopConfiguration().set("fs.s3a.awsAccessKeyId", os.getenv["AWS_ACCESS_KEY"])
+spark._jsc.hadoopConfiguration().set("fs.s3a.awsSecretAccessKey", os.getenv["AWS_SECRET_ACCESS_KEY"])
 sc = spark.sparkContext
 
 sqlContext = SQLContext(sc)
