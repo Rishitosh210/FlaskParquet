@@ -44,9 +44,7 @@ def api_all():
     if request.method == 'POST':
         print(request.json)
         file_key = request.json.get('file_key')
-        #schema = StructType([])
         file_folder = "/".join(file_key.rsplit("/")[:-1])
-        #output_data = sqlContext.createDataFrame(sc.emptyRDD(), schema)
         dff = None
         for index, val in enumerate(s3.Bucket(bucket).objects.filter(Prefix=file_folder + "/")):
             if index == 1:
@@ -55,13 +53,18 @@ def api_all():
                     df = sqlContext.read.parquet(f"s3a://{bucket}/{val.key}")
                     dff = df
             elif index != 0:
-               # df2 = sqlContext.read.parquet("s3a://layers3parqut/ubx-dev-mcpidevint1+2+0000619666-snappy.parquet")
                     df = sqlContext.read.parquet(f"s3a://{bucket}/{val.key}")
                     dff=dff.unionAll(df)
-                    #output_data.union(df1)
+
         print(dff,"---")
-        dff.toPandas().to_parquet(
-            f's3://{bucket}//{file_folder}/{"_".join(file_key.rsplit("/")[:-1])}_MERGE.parquet')
+
+        dff.coalesce(1).repartition(1).write.parquet("merge_parquet",mode="overwrite")
+        prefixed = [filename for filename in os.listdir('merge_parquet') if filename.startswith("p")]
+        print(prefixed[0],"Filename")
+
+        s3.meta.client.upload_file(f"merge_parquet/{prefixed[0]}", bucket, f"{file_folder}/{"_".join(file_key.rsplit("/")[:-1])}_MERGE.parquet")
+
+        os.rmdir("merge_parquet")
 
     return jsonify({
         "status": "success"
