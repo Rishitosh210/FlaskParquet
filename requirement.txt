@@ -29,7 +29,7 @@ filelock==3.0.12
 findspark==1.4.2
 Flask==1.1.2
 fsspec==0.8.2
-gevent==20.6.2
+gevent==24.10.1
 greenlet==0.4.16
 gunicorn==20.0.4
 hibagent==1.0.1
