@@ -102,7 +102,7 @@ stevedore==3.2.2
 thrift==0.13.0
 typing-extensions==3.7.4.3
 ufw==0.36
-urllib3==1.25.10
+urllib3==2.5.0
 virtualenv==20.0.31
 wcwidth==0.2.5
 Werkzeug==1.0.1
