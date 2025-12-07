@@ -105,7 +105,7 @@ ufw==0.36
 urllib3==1.25.10
 virtualenv==20.0.31
 wcwidth==0.2.5
-Werkzeug==1.0.1
+Werkzeug==3.1.4
 wrapt==1.12.1
 yarl==1.5.1
 zipp==3.1.0
